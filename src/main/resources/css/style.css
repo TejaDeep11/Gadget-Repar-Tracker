@@ -1,0 +1,62 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #f4f6f8;
+}
+
+.header-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.sub-header {
+    -fx-font-size: 18px;
+    -fx-text-fill: #34495e;
+}
+
+.primary-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 6;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.success-button {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+}
+
+.success-button:hover {
+    -fx-background-color: #229954;
+}
+
+.secondary-button {
+    -fx-background-color: #95a5a6;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 6;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #7f8c8d;
+}
+
+.danger-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.text-field {
+    -fx-pref-width: 220px;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1),10,0,0,3);
+}

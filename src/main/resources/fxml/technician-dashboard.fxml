@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.pes.gadgetrepair.controller.TechnicianController"
+            stylesheets="@../css/style.css">
+
+    <top>
+        <HBox spacing="15" styleClass="header" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <Label text="Technician Dashboard" styleClass="header-label" style="-fx-text-fill: white; -fx-font-size: 20;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" styleClass="danger-button" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane>
+            <!-- Pending Repairs Tab -->
+            <Tab text="Pending Repairs" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Repairs Assigned to You" styleClass="sub-header"/>
+                    <TableView fx:id="pendingRepairsTable">
+                        <columns>
+                            <TableColumn fx:id="techIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="techDeviceColumn" text="Device" prefWidth="100"/>
+                            <TableColumn fx:id="techIssueColumn" text="Issue" prefWidth="200"/>
+                            <TableColumn fx:id="techCustomerColumn" text="Customer" prefWidth="100"/>
+                            <TableColumn fx:id="techDateColumn" text="Date" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    <Button text="Load Pending Repairs" styleClass="primary-button" onAction="#handleLoadPendingRepairs"/>
+                </VBox>
+            </Tab>
+
+            <!-- Update Repair Status Tab -->
+            <Tab text="Update Status" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Update Repair Status" styleClass="sub-header"/>
+                    
+                    <TextField fx:id="repairIdField" promptText="Enter Repair Request ID"/>
+                    <ComboBox fx:id="statusCombo" promptText="Select New Status" prefWidth="300"/>
+                    <TextField fx:id="notesField" promptText="Add Notes (Optional)"/>
+                    
+                    <Button text="Update Status" styleClass="primary-button" 
+                            onAction="#handleUpdateStatus" style="-fx-padding: 10;"/>
+                </VBox>
+            </Tab>
+
+            <!-- Assign Parts Tab -->
+            <Tab text="Assign Parts" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Assign Parts to Repair" styleClass="sub-header"/>
+                    
+                    <TextField fx:id="assignRepairIdField" promptText="Enter Repair Request ID"/>
+                    <ComboBox fx:id="partsCombo" promptText="Select Part" prefWidth="300"/>
+                    <TextField fx:id="partQuantityField" promptText="Quantity to Use"/>
+                    
+                    <Button text="Assign Part" styleClass="primary-button" 
+                            onAction="#handleAssignPart" style="-fx-padding: 10;"/>
+                    
+                    <Label text="Assigned Parts" styleClass="sub-header"/>
+                    <TableView fx:id="assignedPartsTable">
+                        <columns>
+                            <TableColumn fx:id="partNameCol" text="Part Name" prefWidth="150"/>
+                            <TableColumn fx:id="usedQtyCol" text="Quantity Used" prefWidth="100"/>
+                            <TableColumn fx:id="unitPriceCol" text="Unit Price" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+</BorderPane>

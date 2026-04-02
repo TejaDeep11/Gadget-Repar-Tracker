@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.pes.gadgetrepair.controller.CustomerController"
+            stylesheets="@../css/style.css">
+
+    <!-- Top Navigation -->
+    <top>
+        <HBox spacing="15" styleClass="header" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <Label text="Customer Dashboard" styleClass="header-label" style="-fx-text-fill: white; -fx-font-size: 20;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" styleClass="danger-button" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <TabPane>
+            <!-- Submit Repair Request Tab -->
+            <Tab text="Submit Repair Request" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Submit New Repair Request" styleClass="sub-header"/>
+                    
+                    <TextField fx:id="deviceNameField" promptText="Device Name"/>
+                    <ComboBox fx:id="deviceTypeCombo" promptText="Select Device Type" prefWidth="300"/>
+                    <TextField fx:id="issueDescriptionField" promptText="Describe the Issue"/>
+                    <TextField fx:id="estimatedCostField" promptText="Estimated Cost (Optional)"/>
+                    
+                    <Button text="Submit Repair Request" styleClass="primary-button" 
+                            onAction="#handleSubmitRepair" style="-fx-padding: 10;"/>
+                </VBox>
+            </Tab>
+
+            <!-- View Repair Requests Tab -->
+            <Tab text="My Repair Requests" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Your Repair Requests" styleClass="sub-header"/>
+                    <TableView fx:id="repairRequestsTable">
+                        <columns>
+                            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="deviceColumn" text="Device" prefWidth="100"/>
+                            <TableColumn fx:id="issueColumn" text="Issue" prefWidth="200"/>
+                            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                            <TableColumn fx:id="dateColumn" text="Date" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Load Requests" styleClass="primary-button" onAction="#handleLoadRequests"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- Payment & Invoice Tab -->
+            <Tab text="Invoices &amp; Payments" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Your Invoices" styleClass="sub-header"/>
+                    <TableView fx:id="invoiceTable">
+                        <columns>
+                            <TableColumn fx:id="invoiceIdCol" text="Invoice ID" prefWidth="80"/>
+                            <TableColumn fx:id="repairIdCol" text="Repair ID" prefWidth="80"/>
+                            <TableColumn fx:id="amountCol" text="Amount" prefWidth="100"/>
+                            <TableColumn fx:id="statusPayCol" text="Status" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    <Button text="Pay Invoice" styleClass="success-button" onAction="#handlePayInvoice"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+</BorderPane>

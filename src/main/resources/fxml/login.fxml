@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.pes.gadgetrepair.controller.AuthController"
+            stylesheets="@../css/style.css">
+
+    <center>
+
+        <VBox alignment="CENTER" spacing="20" styleClass="card">
+
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30"/>
+            </padding>
+
+            <ImageView fitHeight="90" fitWidth="90">
+                <image>
+                    <Image url="@../images/logo.png"/>
+                </image>
+            </ImageView>
+
+            <Label text="Gadget Repair Tracker"
+                   styleClass="header-label"/>
+
+            <!-- Login Form -->
+            <VBox fx:id="loginForm" spacing="15">
+                <TextField fx:id="emailField"
+                           promptText="Enter Email"/>
+
+                <PasswordField fx:id="passwordField"
+                               promptText="Enter Password"/>
+
+                <HBox spacing="15" alignment="CENTER">
+                    <Button text="Login"
+                            styleClass="primary-button"
+                            onAction="#handleLogin"/>
+
+                    <Button text="Register"
+                            styleClass="success-button"
+                            onAction="#showRegisterForm"/>
+                </HBox>
+            </VBox>
+
+            <!-- Register Form (Hidden by default) -->
+            <VBox fx:id="registerForm" spacing="15" visible="false" managed="false">
+                <TextField fx:id="regNameField"
+                           promptText="Enter Full Name"/>
+
+                <TextField fx:id="regEmailField"
+                           promptText="Enter Email"/>
+
+                <TextField fx:id="regPhoneField"
+                           promptText="Enter Phone Number"/>
+
+                <PasswordField fx:id="regPasswordField"
+                               promptText="Enter Password"/>
+
+                <HBox spacing="15" alignment="CENTER">
+                    <Button text="Register"
+                            styleClass="success-button"
+                            onAction="#handleRegister"/>
+
+                    <Button text="Back to Login"
+                            styleClass="secondary-button"
+                            onAction="#showLoginForm"/>
+                </HBox>
+            </VBox>
+
+        </VBox>
+
+    </center>
+
+</BorderPane>

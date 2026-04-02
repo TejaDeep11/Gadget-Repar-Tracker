@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.pes.gadgetrepair.controller.ManagerController"
+      spacing="15"
+      alignment="CENTER"
+      stylesheets="@../css/style.css"
+      styleClass="card">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Invoice Details"
+           styleClass="header-label"/>
+
+    <Label text="Repair Request ID:"/>
+    <Label fx:id="repairIdLabel"/>
+
+    <Label text="Total Amount:"/>
+    <Label fx:id="amountLabel"/>
+
+    <Label text="Payment Status:"/>
+    <Label fx:id="statusLabel"/>
+
+</VBox>

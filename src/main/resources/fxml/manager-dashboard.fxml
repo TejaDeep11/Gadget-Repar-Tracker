@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.pes.gadgetrepair.controller.ManagerController"
+            stylesheets="@../css/style.css">
+
+    <top>
+        <HBox spacing="15" styleClass="header" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <Label text="Manager Dashboard" styleClass="header-label" style="-fx-text-fill: white; -fx-font-size: 20;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" styleClass="danger-button" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane>
+            <!-- Inventory Tab -->
+            <Tab text="Inventory Management" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Parts Inventory" styleClass="sub-header"/>
+                    <TableView fx:id="inventoryTable">
+                        <columns>
+                            <TableColumn fx:id="partIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="partNameColumn" text="Part Name" prefWidth="150"/>
+                            <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100"/>
+                            <TableColumn fx:id="priceColumn" text="Price" prefWidth="100"/>
+                            <TableColumn fx:id="supplierColumn" text="Supplier" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                    <Button text="Load Inventory" styleClass="primary-button" onAction="#handleLoadInventory"/>
+                </VBox>
+            </Tab>
+
+            <!-- Add Part Tab -->
+            <Tab text="Add Parts" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Add New Part (You can update quantity later)" styleClass="sub-header"/>
+                    
+                    <TextField fx:id="partNameField" promptText="Part Name"/>
+                    <TextField fx:id="priceField" promptText="Price"/>
+                    <TextField fx:id="supplierField" promptText="Supplier"/>
+                    
+                    <Button text="Add Part" styleClass="primary-button" 
+                            onAction="#handleAddPart" style="-fx-padding: 10;"/>
+                </VBox>
+            </Tab>
+
+            <!-- Update Quantity Tab -->
+            <Tab text="Update Part Quantity" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Manage Part Stock Quantities" styleClass="sub-header"/>
+                    
+                    <Button text="Load Available Parts" styleClass="primary-button" onAction="#handleLoadPartQuantityCombo"/>
+                    
+                    <HBox spacing="10">
+                        <Label text="Select Part:" style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="partQuantityCombo" prefWidth="250"/>
+                    </HBox>
+                    
+                    <HBox spacing="10">
+                        <Label text="New Quantity:" style="-fx-font-weight: bold;"/>
+                        <TextField fx:id="quantityField" promptText="Enter new quantity" prefWidth="200"/>
+                    </HBox>
+                    
+                    <Button text="Update Quantity" styleClass="primary-button" 
+                            onAction="#handleUpdateQuantity" style="-fx-padding: 10;"/>
+                </VBox>
+            </Tab>
+
+            <!-- Invoices Tab -->
+            <Tab text="Invoices" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="View &amp; Approve Customer Payments" styleClass="sub-header"/>
+                    <TableView fx:id="invoicesTable">
+                        <columns>
+                            <TableColumn fx:id="invoiceIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="repairIdColumn" text="Repair ID" prefWidth="100"/>
+                            <TableColumn fx:id="amountColumn" text="Amount" prefWidth="100"/>
+                            <TableColumn fx:id="invoiceDateColumn" text="Date" prefWidth="100"/>
+                            <TableColumn fx:id="invoiceStatusColumn" text="Status" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Load Invoices" styleClass="primary-button" onAction="#handleLoadInvoices"/>
+                        <Button text="Approve Payment" styleClass="primary-button" onAction="#handleApprovePayment"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- History Tab -->
+            <Tab text="Repair History" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Completed &amp; Paid Repairs" styleClass="sub-header"/>
+                    <TableView fx:id="historyTable">
+                        <columns>
+                            <TableColumn fx:id="historyIdCol" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="historyDeviceCol" text="Device" prefWidth="100"/>
+                            <TableColumn fx:id="historyCustomerCol" text="Customer" prefWidth="120"/>
+                            <TableColumn fx:id="historyAmountCol" text="Amount Paid" prefWidth="100"/>
+                            <TableColumn fx:id="historyCompletedDateCol" text="Completed Date" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                    <Button text="Load History" styleClass="primary-button" onAction="#handleLoadHistory"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+</BorderPane>
