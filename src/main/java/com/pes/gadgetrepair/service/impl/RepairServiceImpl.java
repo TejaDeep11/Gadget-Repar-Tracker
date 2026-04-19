@@ -3,9 +3,10 @@ package com.pes.gadgetrepair.service.impl;
 import com.pes.gadgetrepair.dto.RepairRequestDTO;
 import com.pes.gadgetrepair.enums.RepairStatus;
 import com.pes.gadgetrepair.model.*;
+import com.pes.gadgetrepair.repository.CustomerRepository;
 import com.pes.gadgetrepair.repository.GadgetRepository;
 import com.pes.gadgetrepair.repository.RepairRequestRepository;
-import com.pes.gadgetrepair.repository.UserRepository;
+import com.pes.gadgetrepair.repository.TechnicianRepository;
 import com.pes.gadgetrepair.service.RepairService;
 import com.pes.gadgetrepair.service.BillingService;
 import org.springframework.stereotype.Service;
@@ -27,18 +28,21 @@ Handles repair lifecycle management.
 public class RepairServiceImpl implements RepairService {
 
     private final RepairRequestRepository repairRequestRepository;
-    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final TechnicianRepository technicianRepository;
     private final GadgetRepository gadgetRepository;
     private final BillingService billingService;
 
     public RepairServiceImpl(
             RepairRequestRepository repairRequestRepository,
-            UserRepository userRepository,
+            CustomerRepository customerRepository,
+            TechnicianRepository technicianRepository,
             GadgetRepository gadgetRepository,
             BillingService billingService
     ) {
         this.repairRequestRepository = repairRequestRepository;
-        this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
+        this.technicianRepository = technicianRepository;
         this.gadgetRepository = gadgetRepository;
         this.billingService = billingService;
     }
@@ -46,7 +50,7 @@ public class RepairServiceImpl implements RepairService {
     @Override
     public RepairRequest createRepairRequest(RepairRequestDTO dto) {
 
-        Customer customer = (Customer) userRepository.findById(dto.getCustomerId())
+        Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         Gadget gadget = new Gadget(
@@ -82,7 +86,7 @@ public class RepairServiceImpl implements RepairService {
         RepairRequest request = repairRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Repair request not found"));
 
-        Technician technician = (Technician) userRepository.findById(technicianId)
+        Technician technician = technicianRepository.findById(technicianId)
                 .orElseThrow(() -> new RuntimeException("Technician not found"));
 
         request.setTechnician(technician);

@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 */
 
 @Entity
+@Table(name = "technician")
 public class Technician extends User {
 
     private String specialization;

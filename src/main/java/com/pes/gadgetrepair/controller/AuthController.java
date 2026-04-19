@@ -4,6 +4,8 @@ import com.pes.gadgetrepair.config.UserSessionManager;
 import com.pes.gadgetrepair.enums.UserRole;
 import com.pes.gadgetrepair.model.User;
 import com.pes.gadgetrepair.model.Customer;
+import com.pes.gadgetrepair.model.Technician;
+import com.pes.gadgetrepair.model.Manager;
 import com.pes.gadgetrepair.service.UserService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -60,6 +62,9 @@ public class AuthController {
     @FXML
     private PasswordField regPasswordField;
 
+    @FXML
+    private javafx.scene.control.ComboBox<String> regRoleCombo;
+
     // Toggle between login and register forms
     @FXML
     private void showRegisterForm() {
@@ -67,6 +72,13 @@ public class AuthController {
         loginForm.setManaged(false);
         registerForm.setVisible(true);
         registerForm.setManaged(true);
+        
+        // Initialize role combo with available roles
+        javafx.collections.ObservableList<String> roles = javafx.collections.FXCollections.observableArrayList(
+                "CUSTOMER", "TECHNICIAN", "MANAGER"
+        );
+        regRoleCombo.setItems(roles);
+        regRoleCombo.setValue("CUSTOMER"); // Default selection
     }
 
     @FXML
@@ -106,7 +118,7 @@ public class AuthController {
 
     /*
      REGISTER BUTTON
-     (CUSTOMER ONLY)
+     (CUSTOMER, TECHNICIAN, MANAGER)
      */
     @FXML
     private void handleRegister(ActionEvent event) {
@@ -117,25 +129,54 @@ public class AuthController {
             String email = regEmailField.getText().trim();
             String phone = regPhoneField.getText().trim();
             String password = regPasswordField.getText();
+            String selectedRole = regRoleCombo.getValue();
 
             // Validation
-            if(name.isEmpty() || email.isEmpty() || phone.isEmpty() || password.isEmpty()) {
-                System.out.println("All fields are required");
+            if(name.isEmpty() || email.isEmpty() || phone.isEmpty() || password.isEmpty() || selectedRole == null) {
+                System.out.println("All fields are required, including role selection");
                 return;
             }
 
-            // Create Customer instance (all new registrations are customers)
-            Customer customer = new Customer();
-            customer.setName(name);
-            customer.setEmail(email);
-            customer.setPhone(phone);
-            customer.setPasswordHash(password);
-            customer.setRole(UserRole.CUSTOMER);
+            // Create appropriate user type based on selected role
+            User user = null;
+            UserRole role = UserRole.valueOf(selectedRole);
+            
+            if(role == UserRole.CUSTOMER) {
+                Customer customer = new Customer();
+                customer.setName(name);
+                customer.setEmail(email);
+                customer.setPhone(phone);
+                customer.setPasswordHash(password);
+                customer.setRole(UserRole.CUSTOMER);
+                customer.setShippingAddress(""); // Default empty
+                user = customer;
+            }
+            else if(role == UserRole.TECHNICIAN) {
+                Technician technician = new Technician();
+                technician.setName(name);
+                technician.setEmail(email);
+                technician.setPhone(phone);
+                technician.setPasswordHash(password);
+                technician.setRole(UserRole.TECHNICIAN);
+                technician.setSpecialization(""); // Default empty
+                technician.setEfficiencyRating(0.0); // Default
+                user = technician;
+            }
+            else if(role == UserRole.MANAGER) {
+                Manager manager = new Manager();
+                manager.setName(name);
+                manager.setEmail(email);
+                manager.setPhone(phone);
+                manager.setPasswordHash(password);
+                manager.setRole(UserRole.MANAGER);
+                manager.setDepartmentId(""); // Default empty
+                user = manager;
+            }
 
-            User savedUser = userService.saveUser(customer);
-            System.out.println("Customer registered successfully");
+            User savedUser = userService.saveUser(user);
+            System.out.println(selectedRole + " registered successfully");
 
-            // Navigate to customer dashboard
+            // Navigate to appropriate dashboard
             navigateToDashboard(savedUser, event);
 
         }

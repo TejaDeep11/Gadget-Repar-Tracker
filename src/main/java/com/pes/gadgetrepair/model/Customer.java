@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 */
 
 @Entity
+@Table(name = "customer")
 public class Customer extends User {
 
     private String shippingAddress;

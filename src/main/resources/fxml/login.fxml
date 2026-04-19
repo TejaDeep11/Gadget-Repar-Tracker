@@ -60,6 +60,10 @@
                 <PasswordField fx:id="regPasswordField"
                                promptText="Enter Password"/>
 
+                <ComboBox fx:id="regRoleCombo"
+                          promptText="Select Role"
+                          prefWidth="200"/>
+
                 <HBox spacing="15" alignment="CENTER">
                     <Button text="Register"
                             styleClass="success-button"
