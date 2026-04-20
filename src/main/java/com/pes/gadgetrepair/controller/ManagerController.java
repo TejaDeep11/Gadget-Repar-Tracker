@@ -1,9 +1,13 @@
 package com.pes.gadgetrepair.controller;
 
 import com.pes.gadgetrepair.config.UserSessionManager;
+import com.pes.gadgetrepair.enums.RepairStatus;
+import com.pes.gadgetrepair.enums.UserRole;
 import com.pes.gadgetrepair.model.Invoice;
 import com.pes.gadgetrepair.model.Part;
 import com.pes.gadgetrepair.model.RepairRequest;
+import com.pes.gadgetrepair.model.User;
+import com.pes.gadgetrepair.repository.UserRepository;
 import com.pes.gadgetrepair.service.BillingService;
 import com.pes.gadgetrepair.service.InventoryService;
 import com.pes.gadgetrepair.service.RepairService;
@@ -47,19 +51,22 @@ public class ManagerController {
     private final RepairService repairService;
     private final ApplicationContext context;
     private final UserSessionManager sessionManager;
+    private final UserRepository userRepository;
 
     public ManagerController(
             InventoryService inventoryService,
             BillingService billingService,
             RepairService repairService,
             ApplicationContext context,
-            UserSessionManager sessionManager
+            UserSessionManager sessionManager,
+            UserRepository userRepository
     ) {
         this.inventoryService = inventoryService;
         this.billingService = billingService;
         this.repairService = repairService;
         this.context = context;
         this.sessionManager = sessionManager;
+        this.userRepository = userRepository;
     }
 
     @FXML
@@ -132,6 +139,30 @@ public class ManagerController {
     private ComboBox<String> partQuantityCombo;
 
     @FXML
+    private TextField assignTechRepairIdField;
+
+    @FXML
+    private ComboBox<String> technicianAssignCombo;
+
+    @FXML
+    private TableView<RepairRequest> unassignedRepairsTable;
+
+    @FXML
+    private TableColumn<RepairRequest, Long> unassignedIdCol;
+
+    @FXML
+    private TableColumn<RepairRequest, String> unassignedDeviceCol;
+
+    @FXML
+    private TableColumn<RepairRequest, String> unassignedCustomerCol;
+
+    @FXML
+    private TableColumn<RepairRequest, String> unassignedStatusCol;
+
+    @FXML
+    private TableColumn<RepairRequest, String> unassignedDateCol;
+
+    @FXML
     private void initialize() {
         // Set up Part table cell value factories
         partIdColumn.setCellValueFactory(new PropertyValueFactory<>("partId"));
@@ -190,6 +221,26 @@ public class ManagerController {
             return new javafx.beans.property.SimpleObjectProperty<>(0.0);
         });
         historyCompletedDateCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCreatedAt().toString())
+        );
+
+        unassignedIdCol.setCellValueFactory(new PropertyValueFactory<>("requestId"));
+        unassignedDeviceCol.setCellValueFactory(cellData -> {
+            if(cellData.getValue().getGadget() != null) {
+                return new javafx.beans.property.SimpleStringProperty(cellData.getValue().getGadget().getBrand());
+            }
+            return new javafx.beans.property.SimpleStringProperty("N/A");
+        });
+        unassignedCustomerCol.setCellValueFactory(cellData -> {
+            if(cellData.getValue().getCustomer() != null) {
+                return new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCustomer().getName());
+            }
+            return new javafx.beans.property.SimpleStringProperty("N/A");
+        });
+        unassignedStatusCol.setCellValueFactory(cellData ->
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStatus().name())
+        );
+        unassignedDateCol.setCellValueFactory(cellData ->
             new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCreatedAt().toString())
         );
     }
@@ -342,6 +393,86 @@ public class ManagerController {
     @FXML
     private void handleLoadPartQuantityCombo(ActionEvent event) {
         loadPartQuantityCombo();
+    }
+
+    private void loadAvailableTechnicians() {
+        try {
+            List<User> users = userRepository.findAll();
+            List<String> technicianDisplayNames = users.stream()
+                    .filter(user -> user.getRole() == UserRole.TECHNICIAN)
+                    .map(user -> user.getName() + " (ID: " + user.getId() + ")")
+                    .collect(java.util.stream.Collectors.toList());
+
+            technicianAssignCombo.getItems().setAll(technicianDisplayNames);
+            System.out.println("Loaded " + technicianDisplayNames.size() + " technicians");
+        } catch(Exception e) {
+            System.out.println("Error loading technicians: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLoadUnassignedRepairs(ActionEvent event) {
+        try {
+            List<RepairRequest> unassignedRepairs = repairService.getAllRepairRequests().stream()
+                    .filter(repair -> repair.getTechnician() == null)
+                    .filter(repair -> repair.getStatus() != RepairStatus.DELIVERED)
+                    .collect(java.util.stream.Collectors.toList());
+
+            unassignedRepairsTable.setItems(FXCollections.observableArrayList(unassignedRepairs));
+            loadAvailableTechnicians();
+            System.out.println("Loaded " + unassignedRepairs.size() + " unassigned repairs");
+        } catch(Exception e) {
+            System.out.println("Error loading unassigned repairs: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleAssignTechnicianToRepair(ActionEvent event) {
+        try {
+            String repairIdText = assignTechRepairIdField.getText().trim();
+            String selectedTechnician = technicianAssignCombo.getValue();
+
+            if(repairIdText.isEmpty() || selectedTechnician == null || selectedTechnician.isBlank()) {
+                System.out.println("ERROR: Please provide repair ID and select technician");
+                return;
+            }
+
+            Long repairId;
+            try {
+                repairId = Long.parseLong(repairIdText);
+            } catch(NumberFormatException ex) {
+                System.out.println("ERROR: Repair ID must be a number");
+                return;
+            }
+
+            int idStart = selectedTechnician.lastIndexOf("ID: ");
+            int idEnd = selectedTechnician.lastIndexOf(")");
+            if(idStart == -1 || idEnd == -1 || idEnd <= idStart + 4) {
+                System.out.println("ERROR: Invalid technician selection format");
+                return;
+            }
+
+            String technicianIdText = selectedTechnician.substring(idStart + 4, idEnd).trim();
+            Long technicianId;
+            try {
+                technicianId = Long.parseLong(technicianIdText);
+            } catch(NumberFormatException ex) {
+                System.out.println("ERROR: Invalid technician ID in selection");
+                return;
+            }
+
+            repairService.assignTechnician(repairId, technicianId);
+            System.out.println("SUCCESS: Technician #" + technicianId + " assigned to repair #" + repairId);
+
+            assignTechRepairIdField.clear();
+            technicianAssignCombo.getSelectionModel().clearSelection();
+            handleLoadUnassignedRepairs(new ActionEvent());
+        } catch(Exception e) {
+            System.out.println("Error assigning technician: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML

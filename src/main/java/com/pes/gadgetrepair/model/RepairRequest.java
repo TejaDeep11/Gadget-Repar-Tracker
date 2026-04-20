@@ -14,12 +14,15 @@ public class RepairRequest {
     private Long requestId;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @ManyToOne
+    @JoinColumn(name = "technician_id")
     private Technician technician;
 
     @OneToOne
+    @JoinColumn(name = "gadget_gadget_id")
     private Gadget gadget;
 
     private String problemDescription;

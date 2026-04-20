@@ -37,4 +37,6 @@ public interface RepairService {
 
     RepairRequest updateRepairStatus(Long requestId, String status);
 
+      List<RepairRequest> getRepairsForTechnician(Long technicianId);
+
 }

@@ -2,11 +2,13 @@ package com.pes.gadgetrepair.service.impl;
 
 import com.pes.gadgetrepair.dto.RepairRequestDTO;
 import com.pes.gadgetrepair.enums.RepairStatus;
+import com.pes.gadgetrepair.enums.UserRole;
 import com.pes.gadgetrepair.model.*;
 import com.pes.gadgetrepair.repository.CustomerRepository;
 import com.pes.gadgetrepair.repository.GadgetRepository;
 import com.pes.gadgetrepair.repository.RepairRequestRepository;
 import com.pes.gadgetrepair.repository.TechnicianRepository;
+import com.pes.gadgetrepair.repository.UserRepository;
 import com.pes.gadgetrepair.service.RepairService;
 import com.pes.gadgetrepair.service.BillingService;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class RepairServiceImpl implements RepairService {
     private final RepairRequestRepository repairRequestRepository;
     private final CustomerRepository customerRepository;
     private final TechnicianRepository technicianRepository;
+    private final UserRepository userRepository;
     private final GadgetRepository gadgetRepository;
     private final BillingService billingService;
 
@@ -37,12 +40,14 @@ public class RepairServiceImpl implements RepairService {
             RepairRequestRepository repairRequestRepository,
             CustomerRepository customerRepository,
             TechnicianRepository technicianRepository,
+            UserRepository userRepository,
             GadgetRepository gadgetRepository,
             BillingService billingService
     ) {
         this.repairRequestRepository = repairRequestRepository;
         this.customerRepository = customerRepository;
         this.technicianRepository = technicianRepository;
+        this.userRepository = userRepository;
         this.gadgetRepository = gadgetRepository;
         this.billingService = billingService;
     }
@@ -86,9 +91,15 @@ public class RepairServiceImpl implements RepairService {
         RepairRequest request = repairRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Repair request not found"));
 
-        Technician technician = technicianRepository.findById(technicianId)
-                .orElseThrow(() -> new RuntimeException("Technician not found"));
+        User user = userRepository.findById(technicianId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        if(user.getRole() != UserRole.TECHNICIAN) {
+            throw new RuntimeException("User is not a technician");
+        }
 
+        // Use getReference to create a Technician proxy with just the ID
+        // This avoids unnecessary DB lookup while satisfying FK constraint
+        Technician technician = technicianRepository.getReferenceById(technicianId);
         request.setTechnician(technician);
         request.setStatus(RepairStatus.DIAGNOSIS_IN_PROGRESS);
 
@@ -124,5 +135,15 @@ public class RepairServiceImpl implements RepairService {
         }
         
         return updatedRequest;
+    }
+
+    @Override
+    public List<RepairRequest> getRepairsForTechnician(Long technicianId) {
+        User user = userRepository.findById(technicianId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if(user.getRole() != UserRole.TECHNICIAN) {
+            throw new RuntimeException("User is not a technician");
+        }
+        return repairRequestRepository.findByTechnicianId(technicianId);
     }
 }

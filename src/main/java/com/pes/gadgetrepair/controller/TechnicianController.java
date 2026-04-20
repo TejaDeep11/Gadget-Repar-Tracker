@@ -169,20 +169,25 @@ public class TechnicianController {
     @FXML
     private void handleLoadPendingRepairs(ActionEvent event) {
         try {
-            // Load all repair requests and filter out DELIVERED ones
-            java.util.List<RepairRequest> allRepairs = repairService.getAllRepairRequests();
-            java.util.List<RepairRequest> pendingRepairs = allRepairs.stream()
+            Long currentTechnicianId = sessionManager.getCurrentUserId();
+            if(currentTechnicianId == null) {
+                System.out.println("ERROR: No technician logged in");
+                return;
+            }
+
+            java.util.List<RepairRequest> assignedRepairs = repairService.getRepairsForTechnician(currentTechnicianId);
+            java.util.List<RepairRequest> pendingRepairs = assignedRepairs.stream()
                 .filter(r -> !r.getStatus().equals(RepairStatus.DELIVERED))
                 .collect(java.util.stream.Collectors.toList());
             
-            System.out.println("Loaded " + pendingRepairs.size() + " pending repairs");
+            System.out.println("Loaded " + pendingRepairs.size() + " repairs assigned to technician #" + currentTechnicianId);
             
             // Convert to ObservableList and populate the table
             ObservableList<RepairRequest> observableRepairs = FXCollections.observableArrayList(pendingRepairs);
             pendingRepairsTable.setItems(observableRepairs);
             
         } catch(Exception e) {
-            System.out.println("Error loading pending repairs: " + e.getMessage());
+            System.out.println("Error loading assigned repairs: " + e.getMessage());
             e.printStackTrace();
         }
     }

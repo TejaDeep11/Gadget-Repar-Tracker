@@ -107,6 +107,30 @@
                     <Button text="Load History" styleClass="primary-button" onAction="#handleLoadHistory"/>
                 </VBox>
             </Tab>
+
+            <Tab text="Assign Technician" closable="false">
+                <VBox spacing="15" styleClass="card" style="-fx-padding: 20;">
+                    <Label text="Assign Repairs To Technicians" styleClass="sub-header"/>
+
+                    <HBox spacing="10">
+                        <TextField fx:id="assignTechRepairIdField" promptText="Repair ID" prefWidth="120"/>
+                        <ComboBox fx:id="technicianAssignCombo" promptText="Select Technician" prefWidth="260"/>
+                        <Button text="Assign" styleClass="primary-button" onAction="#handleAssignTechnicianToRepair"/>
+                    </HBox>
+
+                    <TableView fx:id="unassignedRepairsTable" prefHeight="320">
+                        <columns>
+                            <TableColumn fx:id="unassignedIdCol" text="Request ID" prefWidth="90"/>
+                            <TableColumn fx:id="unassignedDeviceCol" text="Device" prefWidth="120"/>
+                            <TableColumn fx:id="unassignedCustomerCol" text="Customer" prefWidth="150"/>
+                            <TableColumn fx:id="unassignedStatusCol" text="Status" prefWidth="150"/>
+                            <TableColumn fx:id="unassignedDateCol" text="Created At" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+
+                    <Button text="Load Unassigned Repairs" styleClass="primary-button" onAction="#handleLoadUnassignedRepairs"/>
+                </VBox>
+            </Tab>
         </TabPane>
     </center>
 
