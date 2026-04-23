@@ -2,6 +2,7 @@ package com.pes.gadgetrepair.controller;
 
 import com.pes.gadgetrepair.config.UserSessionManager;
 import com.pes.gadgetrepair.enums.UserRole;
+import com.pes.gadgetrepair.factory.UserFactory;
 import com.pes.gadgetrepair.model.User;
 import com.pes.gadgetrepair.model.Customer;
 import com.pes.gadgetrepair.service.UserService;
@@ -124,14 +125,14 @@ public class AuthController {
                 return;
             }
 
-            // Create Customer instance (all new registrations are customers)
-            Customer customer = new Customer();
-            customer.setName(name);
-            customer.setEmail(email);
-            customer.setPhone(phone);
-            customer.setPasswordHash(password);
-            customer.setRole(UserRole.CUSTOMER);
-            customer.setShippingAddress(""); // Default empty
+            // Create Customer using UserFactory
+            User customer = UserFactory.createUser(
+                    UserRole.CUSTOMER,
+                    name,
+                    email,
+                    phone,
+                    password
+            );
 
             User savedUser = userService.saveUser(customer);
             System.out.println("Customer registered successfully");

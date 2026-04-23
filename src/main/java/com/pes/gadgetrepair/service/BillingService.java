@@ -1,6 +1,7 @@
 package com.pes.gadgetrepair.service;
 
 import com.pes.gadgetrepair.model.Invoice;
+import com.pes.gadgetrepair.strategy.PaymentStrategy;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,8 @@ public interface BillingService {
     Optional<Invoice> findInvoiceById(Long invoiceId);
 
     Invoice updatePaymentStatus(Long invoiceId, String paymentStatus);
+
+    Invoice processPayment(Long invoiceId, PaymentStrategy paymentStrategy);
 
     List<Invoice> getAllInvoices();
 

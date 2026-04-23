@@ -3,6 +3,7 @@ package com.pes.gadgetrepair.controller;
 import com.pes.gadgetrepair.config.UserSessionManager;
 import com.pes.gadgetrepair.model.RepairRequest;
 import com.pes.gadgetrepair.enums.RepairStatus;
+import com.pes.gadgetrepair.repository.PartUsageRepository;
 import com.pes.gadgetrepair.service.RepairService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,17 +40,20 @@ public class TechnicianController {
     private final ApplicationContext context;
     private final UserSessionManager sessionManager;
     private final com.pes.gadgetrepair.service.InventoryService inventoryService;
+    private final PartUsageRepository partUsageRepository;
 
     public TechnicianController(
             RepairService repairService,
             ApplicationContext context,
             UserSessionManager sessionManager,
-            com.pes.gadgetrepair.service.InventoryService inventoryService
+            com.pes.gadgetrepair.service.InventoryService inventoryService,
+            PartUsageRepository partUsageRepository
     ) {
         this.repairService = repairService;
         this.context = context;
         this.sessionManager = sessionManager;
         this.inventoryService = inventoryService;
+        this.partUsageRepository = partUsageRepository;
     }
 
     @FXML
@@ -298,7 +302,8 @@ public class TechnicianController {
             partUsage.setPart(part);
             partUsage.setQuantityUsed(quantity);
 
-            // TODO: Save PartUsage (might need a service method)
+            // Save PartUsage record to database
+            partUsageRepository.save(partUsage);
             System.out.println("SUCCESS: " + quantity + " of " + partNameForLookup + " assigned to repair #" + repairId);
 
             // Clear fields

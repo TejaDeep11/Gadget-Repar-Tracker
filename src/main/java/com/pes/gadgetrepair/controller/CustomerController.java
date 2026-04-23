@@ -6,6 +6,10 @@ import com.pes.gadgetrepair.enums.DeviceType;
 import com.pes.gadgetrepair.model.RepairRequest;
 import com.pes.gadgetrepair.service.RepairService;
 import com.pes.gadgetrepair.service.BillingService;
+import com.pes.gadgetrepair.strategy.CashPaymentStrategy;
+import com.pes.gadgetrepair.strategy.CardPaymentStrategy;
+import com.pes.gadgetrepair.strategy.UPIPaymentStrategy;
+import com.pes.gadgetrepair.strategy.PaymentStrategy;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -97,6 +101,13 @@ public class CustomerController {
     @FXML
     private TableColumn<com.pes.gadgetrepair.model.Invoice, String> statusPayCol;
 
+    // NOTIFICATIONS UI
+    @FXML
+    private TableView<String> notificationsTable;
+
+    @FXML
+    private TableColumn<String, String> notificationCol;
+
     @FXML
     private void initialize() {
         // Populate device type combo box
@@ -127,16 +138,23 @@ public class CustomerController {
 
         // Set up Invoice TableColumn cell value factories
         invoiceIdCol.setCellValueFactory(new PropertyValueFactory<>("invoiceId"));
-        repairIdCol.setCellValueFactory(cellData -> {
-            if(cellData.getValue().getRepairRequest() != null) {
-                return new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getRepairRequest().getRequestId());
+        repairIdCol.setCellValueFactory(repairCellData -> {
+            if(repairCellData.getValue().getRepairRequest() != null) {
+                return new javafx.beans.property.SimpleObjectProperty<>(repairCellData.getValue().getRepairRequest().getRequestId());
             }
             return new javafx.beans.property.SimpleObjectProperty<>(null);
         });
         amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        statusPayCol.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getPaymentStatus().name())
+        statusPayCol.setCellValueFactory(statusCellData -> 
+            new javafx.beans.property.SimpleStringProperty(statusCellData.getValue().getPaymentStatus().name())
         );
+
+        // Set up Notifications TableColumn
+        if(notificationCol != null) {
+            notificationCol.setCellValueFactory(notifCellData -> 
+                new javafx.beans.property.SimpleStringProperty(notifCellData.getValue())
+            );
+        }
     }
 
     @FXML
@@ -199,6 +217,9 @@ public class CustomerController {
             // Also load invoices when requests are loaded
             loadInvoices();
             
+            // Load notifications
+            loadNotifications();
+            
         } catch(Exception e) {
             System.out.println("Error loading requests: " + e.getMessage());
             e.printStackTrace();
@@ -226,34 +247,128 @@ public class CustomerController {
                 return;
             }
 
-            // Show payment dialog
-            javafx.scene.control.Alert paymentDialog = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
-            paymentDialog.setTitle("Invoice Payment");
-            paymentDialog.setHeaderText("Pay Invoice #" + selectedInvoice.getInvoiceId());
-            paymentDialog.setContentText("Amount: $" + selectedInvoice.getAmount() + "\nRepair ID: " + selectedInvoice.getRepairRequest().getRequestId() + "\n\nProceed with payment?");
+            // Create payment method selection dialog
+            javafx.scene.control.Dialog<String> paymentMethodDialog = new javafx.scene.control.Dialog<>();
+            paymentMethodDialog.setTitle("Select Payment Method");
+            paymentMethodDialog.setHeaderText("Choose your payment method for Invoice #" + selectedInvoice.getInvoiceId());
             
-            java.util.Optional<javafx.scene.control.ButtonType> result = paymentDialog.showAndWait();
-            if(result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
-                // Update repair status to PENDING_PAYMENT (waiting for manager approval)
-                RepairRequest repair = selectedInvoice.getRepairRequest();
-                repairService.updateRepairStatus(repair.getRequestId(), com.pes.gadgetrepair.enums.RepairStatus.PENDING_PAYMENT.name());
+            javafx.scene.layout.VBox dialogContent = new javafx.scene.layout.VBox(10);
+            ComboBox<String> paymentMethodCombo = new ComboBox<>();
+            paymentMethodCombo.getItems().addAll("CASH", "CARD", "UPI");
+            paymentMethodCombo.setValue("CASH");
+            
+            javafx.scene.control.Label amountLabel = new javafx.scene.control.Label("Amount: $" + selectedInvoice.getAmount());
+            dialogContent.getChildren().addAll(amountLabel, paymentMethodCombo);
+            
+            paymentMethodDialog.getDialogPane().setContent(dialogContent);
+            paymentMethodDialog.getDialogPane().getButtonTypes().addAll(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+            paymentMethodDialog.setResultConverter(buttonType -> 
+                buttonType == javafx.scene.control.ButtonType.OK ? paymentMethodCombo.getValue() : null
+            );
+            
+            java.util.Optional<String> result = paymentMethodDialog.showAndWait();
+            
+            if(result.isPresent()) {
+                String selectedMethod = result.get();
                 
-                // Update invoice payment status to PAID
-                billingService.updatePaymentStatus(selectedInvoice.getInvoiceId(), com.pes.gadgetrepair.enums.PaymentStatus.PAID.name());
+                // Select payment strategy based on selected method
+                PaymentStrategy strategy = null;
+                switch(selectedMethod) {
+                    case "CASH":
+                        strategy = new CashPaymentStrategy();
+                        break;
+                    case "CARD":
+                        strategy = new CardPaymentStrategy();
+                        break;
+                    case "UPI":
+                        strategy = new UPIPaymentStrategy();
+                        break;
+                    default:
+                        strategy = new CashPaymentStrategy();
+                }
                 
-                System.out.println("Invoice #" + selectedInvoice.getInvoiceId() + " marked as PAID. Awaiting manager approval...");
-                javafx.scene.control.Alert successAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-                successAlert.setTitle("Payment Submitted");
-                successAlert.setHeaderText("Payment Successful");
-                successAlert.setContentText("Invoice has been marked as paid and is awaiting manager approval.");
-                successAlert.showAndWait();
-                
-                // Reload invoices
-                loadInvoices();
+                // Process payment using selected strategy
+                try {
+                    System.out.println("Processing " + selectedMethod + " payment for Invoice #" + selectedInvoice.getInvoiceId());
+                    billingService.processPayment(selectedInvoice.getInvoiceId(), strategy);
+                    
+                    // Update repair status to PENDING_PAYMENT
+                    RepairRequest repair = selectedInvoice.getRepairRequest();
+                    repairService.updateRepairStatus(repair.getRequestId(), com.pes.gadgetrepair.enums.RepairStatus.PENDING_PAYMENT.name());
+                    
+                    System.out.println("Invoice #" + selectedInvoice.getInvoiceId() + " marked as PAID via " + selectedMethod);
+                    
+                    // Add notification
+                    addNotification("Payment of $" + selectedInvoice.getAmount() + " processed via " + selectedMethod + " for Invoice #" + selectedInvoice.getInvoiceId());
+                    
+                    javafx.scene.control.Alert successAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("Payment Successful");
+                    successAlert.setHeaderText("Payment Processed");
+                    successAlert.setContentText("Invoice #" + selectedInvoice.getInvoiceId() + " has been paid via " + selectedMethod + ".\nAwaiting manager approval...");
+                    successAlert.showAndWait();
+                    
+                    // Reload invoices
+                    loadInvoices();
+                    loadNotifications();
+                    
+                } catch(Exception e) {
+                    System.out.println("Payment processing error: " + e.getMessage());
+                    javafx.scene.control.Alert errorAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Payment Error");
+                    errorAlert.setHeaderText("Payment Failed");
+                    errorAlert.setContentText("Error processing payment: " + e.getMessage());
+                    errorAlert.showAndWait();
+                }
             }
         } catch(Exception e) {
-            System.out.println("Error processing payment: " + e.getMessage());
+            System.out.println("Error in payment dialog: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // Load notifications for current customer
+    @FXML
+    private void loadNotifications() {
+        try {
+            Long customerId = sessionManager.getCurrentUserId();
+            if(customerId == null) {
+                System.out.println("Error: No logged-in user found");
+                return;
+            }
+            
+            // Get all repairs for this customer
+            List<RepairRequest> customerRepairs = viewAllRequests();
+            
+            // Create notifications based on repair statuses
+            java.util.List<String> notifications = new java.util.ArrayList<>();
+            
+            for(RepairRequest repair : customerRepairs) {
+                String notif = "Repair #" + repair.getRequestId() + ": " + repair.getStatus().name() + 
+                              " (Gadget: " + (repair.getGadget() != null ? repair.getGadget().getBrand() : "N/A") + ")";
+                notifications.add(notif);
+            }
+            
+            System.out.println("Loaded " + notifications.size() + " notifications for customer");
+            
+            if(notificationsTable != null) {
+                ObservableList<String> observableNotifications = FXCollections.observableArrayList(notifications);
+                notificationsTable.setItems(observableNotifications);
+            }
+            
+        } catch(Exception e) {
+            System.out.println("Error loading notifications: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void addNotification(String message) {
+        if(notificationsTable != null) {
+            ObservableList<String> currentNotifs = notificationsTable.getItems();
+            if(currentNotifs == null) {
+                currentNotifs = FXCollections.observableArrayList();
+            }
+            currentNotifs.add(0, "[NEW] " + message); // Add to top
+            notificationsTable.setItems(currentNotifs);
         }
     }
 

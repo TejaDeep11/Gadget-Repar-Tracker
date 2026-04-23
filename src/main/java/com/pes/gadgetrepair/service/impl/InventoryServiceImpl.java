@@ -1,5 +1,6 @@
 package com.pes.gadgetrepair.service.impl;
 
+import com.pes.gadgetrepair.exception.InventoryException;
 import com.pes.gadgetrepair.model.Part;
 import com.pes.gadgetrepair.repository.PartRepository;
 import com.pes.gadgetrepair.service.InventoryService;
@@ -45,7 +46,7 @@ public class InventoryServiceImpl implements InventoryService {
     public Part updateStock(Long partId, int quantity) {
 
         Part part = partRepository.findById(partId)
-                .orElseThrow(() -> new RuntimeException("Part not found"));
+                .orElseThrow(() -> new InventoryException("Part not found"));
 
         part.setQuantity(part.getQuantity() + quantity);
 

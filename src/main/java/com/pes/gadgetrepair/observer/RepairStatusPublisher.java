@@ -1,6 +1,7 @@
 package com.pes.gadgetrepair.observer;
 
 import com.pes.gadgetrepair.model.RepairRequest;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
     - New observer types can be added easily.
 */
 
+@Component
 public class RepairStatusPublisher {
 
     private final List<NotificationObserver> observers = new ArrayList<>();

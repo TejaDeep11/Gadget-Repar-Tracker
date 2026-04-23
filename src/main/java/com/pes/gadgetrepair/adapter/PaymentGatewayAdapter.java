@@ -2,6 +2,8 @@ package com.pes.gadgetrepair.adapter;
 
 import com.pes.gadgetrepair.enums.PaymentStatus;
 import com.pes.gadgetrepair.model.Invoice;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;
 
 /*
  Design Pattern:
@@ -34,6 +36,7 @@ import com.pes.gadgetrepair.model.Invoice;
       ↓
  ExternalPaymentGateway
 */
+@Component
 
 public class PaymentGatewayAdapter {
 
